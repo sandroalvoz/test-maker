@@ -4,7 +4,7 @@ App para hacer exámenes tipo test (web y de escritorio para Windows), más una 
 
 ## Descargar
 
-- **Windows**: descarga `TestMaker-1.0.0-win-x64.zip` desde la sección *Releases* del repositorio, descomprímelo y abre `TestMaker.exe`. No necesita instalación.
+- **Windows**: descarga `TestMaker-<versión>-win-x64.zip` desde la sección *Releases* del repositorio, descomprímelo y abre `TestMaker.exe`. No necesita instalación.
   La app no está firmada, así que Windows puede mostrar "Windows protegió su PC". Pulsa *Más información* → *Ejecutar de todas formas*.
 - **Navegador**: clona o descarga el repositorio y abre `index.html`.
 
@@ -17,6 +17,20 @@ Abre `index.html` con doble clic (Chrome, Edge o Firefox) o usa la app de escrit
 - **Opciones antes de empezar**: filtrar por temas, número de preguntas, barajar preguntas u opciones y tiempo límite.
 - **Durante el examen**: navegador de preguntas, marcar para revisar, reloj y atajos de teclado (`A`–`H` o `1`–`8` para responder, `←` `→` para moverte, `M` para marcar).
 - **Resultados**: nota sobre 10 (con penalización por fallo si el examen la tiene), aciertos por tema, corrección pregunta a pregunta con explicación y botón para repasar solo las falladas y en blanco.
+
+### Editor de exámenes
+
+La pestaña **Editor** permite crear y modificar exámenes con formularios, sin tocar el JSON:
+
+- Datos del examen, puntuación (con atajos para restar fallos), tiempo y orden.
+- Preguntas de respuesta única, múltiple y verdadero/falso. La correcta se marca pulsando su letra.
+- Imágenes en el enunciado y en las opciones: desde un archivo (se guarda dentro del examen) o por URL/ruta.
+- Vista previa de cada pregunta, índice lateral, reordenar, duplicar y contraer preguntas.
+- Revisa el examen mientras escribes y señala lo que falta en cada pregunta.
+- *Guardar* (`Ctrl+S`) lo añade a la biblioteca. En la app de escritorio también escribe el `.json` en la carpeta de exámenes, o sobrescribe el archivo de origen si el examen venía de uno. *Descargar JSON* exporta el archivo.
+- Para editar un examen existente: botón ✎ en la biblioteca o *Editar examen* en su ficha. También abre archivos `.json` con errores para corregirlos.
+
+El borrador se guarda solo mientras editas, así que no se pierde al cerrar la app.
 
 Los exámenes cargados, el historial de intentos y el examen en curso se guardan en el navegador (`localStorage`). Si borras los datos del navegador se pierden; los archivos `.json` originales no se tocan.
 
@@ -102,6 +116,7 @@ node .claude/skills/generar-test/scripts/validar.cjs examenes/mi-examen.json --c
 | Archivo | Qué es |
 |---|---|
 | `index.html`, `app.js`, `estilos.css` | La app |
+| `editor.js` | Editor visual de exámenes (pestaña *Editor*) |
 | `escritorio/` | App de escritorio (Electron): proceso principal, puente con la app e icono |
 | `vendor/katex/` | KaTeX para fórmulas sin internet |
 | `fuentes/` | Fuente Libron |

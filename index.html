@@ -15,8 +15,12 @@
 <body>
   <header class="barra">
     <button class="logo" data-accion="ir-inicio" title="Volver a la biblioteca">
-      <span class="logo-marca" aria-hidden="true">✓</span> TestMaker
+      <span class="logo-marca" aria-hidden="true">✓</span> <span class="logo-texto">TestMaker</span>
     </button>
+    <nav class="pestanas" aria-label="Secciones">
+      <button class="pestana" data-accion="ir-inicio" data-pestana="inicio">Biblioteca</button>
+      <button class="pestana" data-accion="ir-editor" data-pestana="editor">Editor</button>
+    </nav>
     <div class="barra-der">
       <span id="reloj" class="reloj" hidden></span>
       <button class="btn-icono" data-accion="cambiar-tema" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema">◐</button>
@@ -29,6 +33,7 @@
   <div id="avisos" class="toasts" aria-live="polite"></div>
 
   <script src="validador.js"></script>
+  <script src="editor.js"></script>
   <script src="app.js"></script>
   <!-- KaTeX para fórmulas ($...$), incluido en vendor/ para que funcione sin internet. -->
   <script defer src="vendor/katex/katex.min.js"></script>

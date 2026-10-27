@@ -153,10 +153,10 @@
       .querySelector('.modal').classList.add('modal-imagen');
   }
 
-  function formulas() {
+  function formulas(raiz = $app) {
     if (typeof window.renderMathInElement !== 'function') return;
     try {
-      window.renderMathInElement($app, {
+      window.renderMathInElement(raiz, {
         delimiters: [
           { left: '$$', right: '$$', display: true },
           { left: '$', right: '$', display: false },
@@ -268,7 +268,8 @@
     const norm = resolverImagenes(V.normalizar(datos), ruta);
     const id = slug(norm.titulo);
     const previo = biblioteca.findIndex((e) => e.id === id);
-    const entrada = { id, datos: norm, actualizado: Date.now() };
+    // ruta: archivo de origen en disco (escritorio); el editor lo usa para guardar encima.
+    const entrada = { id, datos: norm, actualizado: Date.now(), ruta: ruta || (previo >= 0 ? biblioteca[previo].ruta : undefined) };
     if (previo >= 0) biblioteca[previo] = entrada;
     else biblioteca.unshift(entrada);
     persistirBiblioteca();
@@ -373,17 +374,56 @@
     trasCargar(cargados);
   }
 
-  function exportar(id) {
-    const e = examenPorId(id);
-    if (!e) return;
-    const blob = new Blob([JSON.stringify(e.datos, null, 2)], { type: 'application/json' });
+  function descargarJson(nombre, datos) {
+    const blob = new Blob([`${JSON.stringify(datos, null, 2)}\n`], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `${e.id}.json`;
+    a.download = nombre;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  function exportar(id) {
+    const e = examenPorId(id);
+    if (e) descargarJson(`${e.id}.json`, e.datos);
+  }
+
+  /* Guarda un examen que viene del editor. En escritorio también escribe su archivo .json.
+     origenId: examen de la biblioteca que se está editando (puede cambiar de título). */
+  async function guardarDesdeEditor(datos, { origenId = null, ruta = null, forzar = false } = {}) {
+    const r = V.validar(datos);
+    if (!r.ok) return { ok: false, errores: r.errores };
+    const id = slug(datos.titulo.trim());
+    const otro = examenPorId(id);
+    if (!forzar && otro && id !== origenId) return { ok: false, conflicto: true, titulo: otro.datos.titulo };
+    const previo = examenPorId(origenId);
+    let rutaFinal = ruta || (previo && previo.ruta) || null;
+    if (ESC && ESC.guardarExamen) {
+      try {
+        const res = await ESC.guardarExamen({ ruta: rutaFinal, nombre: id, datos });
+        rutaFinal = res.ruta;
+        vistos[res.ruta] = res.modificado; // que la carpeta sincronizada no lo vuelva a importar
+        guardar(LS.vistos, vistos);
+      } catch (e) {
+        aviso('No se pudo escribir el archivo en la carpeta de exámenes; se guarda solo en la biblioteca.');
+      }
+    }
+    const norm = resolverImagenes(V.normalizar(datos), rutaFinal);
+    if (origenId && origenId !== id) {
+      biblioteca = biblioteca.filter((e) => e.id !== origenId);
+      if (historial[origenId]) {
+        historial[id] = [...(historial[id] || []), ...historial[origenId]];
+        delete historial[origenId];
+        guardar(LS.historial, historial);
+      }
+    }
+    const entrada = { id, datos: norm, actualizado: Date.now(), ruta: rutaFinal || undefined };
+    const i = biblioteca.findIndex((e) => e.id === id);
+    if (i >= 0) biblioteca[i] = entrada;
+    else biblioteca.unshift(entrada);
+    persistirBiblioteca();
+    return { ok: true, id, ruta: rutaFinal };
   }
 
   /* ---------- Sesión de examen ---------- */
@@ -591,13 +631,22 @@
   }
 
   function render() {
-    const vistas = { inicio: vInicio, detalle: vDetalle, examen: vExamen, resultados: vResultados };
+    const vistas = { inicio: vInicio, detalle: vDetalle, examen: vExamen, resultados: vResultados, editor: () => editor.vista() };
     if (vista.nombre === 'examen' && !sesion) vista = { nombre: 'inicio' };
     if (vista.nombre === 'resultados' && !resultado) vista = { nombre: 'inicio' };
     if (vista.nombre === 'detalle' && !examenPorId(vista.id)) vista = { nombre: 'inicio' };
     $app.innerHTML = vistas[vista.nombre]();
     if (vista.nombre === 'examen' && !intervalo) arrancarReloj();
-    formulas();
+    // Pestañas de la cabecera: el editor tiene la suya; todo lo demás es la biblioteca.
+    const pestana = vista.nombre === 'editor' ? 'editor' : 'inicio';
+    document.querySelectorAll('.pestana').forEach((p) => {
+      const activa = p.dataset.pestana === pestana;
+      p.classList.toggle('activa', activa);
+      if (activa) p.setAttribute('aria-current', 'page');
+      else p.removeAttribute('aria-current');
+    });
+    if (vista.nombre === 'editor') editor.trasPintar();
+    else formulas();
   }
 
   function resumenHistorial(id) {
@@ -643,6 +692,7 @@
           <div class="meta">${resumenHistorial(e.id) || 'Sin intentos todavía'}</div>
           <div class="pie">
             <button class="btn btn-primario" data-accion="abrir" data-id="${esc(e.id)}">Abrir</button>
+            <button class="btn-icono" data-accion="ed-editar" data-id="${esc(e.id)}" title="Editar" aria-label="Editar">✎</button>
             <button class="btn-icono" data-accion="exportar" data-id="${esc(e.id)}" title="Descargar JSON" aria-label="Descargar JSON">⤓</button>
             <button class="btn-icono btn-peligro" data-accion="eliminar" data-id="${esc(e.id)}" title="Quitar de la biblioteca" aria-label="Quitar de la biblioteca">✕</button>
           </div>
@@ -693,7 +743,10 @@
 
     return `
       <section>
-        <button class="btn btn-fantasma volver" data-accion="ir-inicio">← Biblioteca</button>
+        <div class="fila separado">
+          <button class="btn btn-fantasma volver" data-accion="ir-inicio">← Biblioteca</button>
+          <button class="btn" data-accion="ed-editar" data-id="${esc(e.id)}">✎ Editar examen</button>
+        </div>
         <h1>${esc(d.titulo)}</h1>
         ${d.descripcion ? `<p class="subtitulo">${esc(d.descripcion)}</p>` : ''}
         <div class="chips">
@@ -963,6 +1016,10 @@
       erroresCarga = [];
       ir({ nombre: 'inicio' });
     },
+    'ir-editor': () => {
+      if (vista.nombre === 'examen' && sesion) { acciones['pedir-abandonar'](); return; }
+      ir({ nombre: 'editor' });
+    },
     'cambiar-tema': () => {
       const raiz = document.documentElement;
       const oscuroAhora = raiz.dataset.theme ? raiz.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1108,7 +1165,19 @@
     cargarArchivos(ev.dataTransfer.files);
   });
 
+  // Editor: cada cambio en un campo actualiza el borrador sin volver a pintar la página.
+  document.addEventListener('input', (ev) => {
+    if (vista.nombre !== 'editor') return;
+    const el = ev.target.closest('[data-ed]');
+    if (el) editor.alEntrada(el);
+  });
+
   document.addEventListener('keydown', (ev) => {
+    if (vista.nombre === 'editor' && (ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's') {
+      ev.preventDefault();
+      if (!hayModal()) editor.guardar();
+      return;
+    }
     if (ev.key === 'Escape' && hayModal()) { cerrarModal(); return; }
     if (hayModal() && ev.key === 'Enter' && ev.target.tagName !== 'TEXTAREA') {
       const p = document.querySelector('.modal .btn-primario');
@@ -1131,6 +1200,19 @@
   });
 
   window.TestMaker = { formulas };
+
+  // Editor de exámenes (editor.js).
+  const editor = window.TestMakerEditor({
+    V, esc, md, mdLinea, letra, plural, slug, aviso, modal, cerrarModal, formulas,
+    leer, guardar, borrar, rutaDe, examenPorId,
+    biblioteca: () => biblioteca,
+    render: () => render(),
+    ir: (v) => ir(v),
+    descargar: descargarJson,
+    guardarExamen: guardarDesdeEditor,
+  });
+  Object.assign(acciones, editor.acciones);
+
   render();
 
   if (ESC) {

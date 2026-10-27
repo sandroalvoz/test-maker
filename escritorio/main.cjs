@@ -10,6 +10,7 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, nativeTheme, shell } = requir
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const url = require('url');
 
 const RAIZ = path.join(__dirname, '..');
 const DIR_CONFIG = process.env.TESTMAKER_HOME || path.join(os.homedir(), '.testmaker');
@@ -138,7 +139,46 @@ async function dialogoCarpeta() {
   return r.filePaths[0];
 }
 
+/* ---------- Guardar desde el editor ---------- */
+// Las imágenes que la app resolvió a file:///... vuelven a ser rutas relativas al .json si están dentro de su carpeta.
+function relativizarImagenes(datos, dir) {
+  const relativa = (src) => {
+    if (typeof src !== 'string' || !src.startsWith('file:')) return src;
+    try {
+      const abs = url.fileURLToPath(src);
+      const rel = path.relative(dir, abs);
+      return !rel.startsWith('..') && !path.isAbsolute(rel) ? rel.split(path.sep).join('/') : abs;
+    } catch (e) {
+      return src;
+    }
+  };
+  const enTexto = (t) => (typeof t === 'string' ? t.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (m, alt, s) => `![${alt}](${relativa(s.trim())})`) : t);
+  for (const p of datos.preguntas || []) {
+    if (p.imagen) p.imagen = relativa(p.imagen);
+    p.enunciado = enTexto(p.enunciado);
+    if (p.explicacion) p.explicacion = enTexto(p.explicacion);
+    if (Array.isArray(p.opciones)) {
+      p.opciones = p.opciones.map((o) => (typeof o === 'string' ? enTexto(o) : o && o.imagen ? { ...o, imagen: relativa(o.imagen) } : o));
+    }
+  }
+  return datos;
+}
+
+function guardarExamen({ ruta, nombre, datos }) {
+  let destino = typeof ruta === 'string' && /\.json$/i.test(ruta) ? ruta : null;
+  if (!destino) {
+    const carpeta = carpetaExamenes();
+    const base = String(nombre || 'examen').replace(/[^a-z0-9-]/gi, '') || 'examen';
+    destino = path.join(carpeta, `${base}.json`);
+    for (let n = 2; fs.existsSync(destino); n++) destino = path.join(carpeta, `${base}-${n}.json`);
+  }
+  fs.mkdirSync(path.dirname(destino), { recursive: true });
+  fs.writeFileSync(destino, `${JSON.stringify(relativizarImagenes(datos, path.dirname(destino)), null, 2)}\n`);
+  return { ruta: destino, modificado: fs.statSync(destino).mtimeMs };
+}
+
 /* ---------- IPC ---------- */
+ipcMain.handle('guardar-examen', (e, args) => guardarExamen(args));
 ipcMain.handle('leer-carpeta', () => {
   const carpeta = carpetaExamenes();
   return { carpeta, archivos: listarJson(carpeta).map(leerArchivo) };

@@ -95,6 +95,6 @@ Si el usuario pide algo concreto (nivel, enfoque práctico, tipo de examen ofici
 Dile al usuario, en 3–5 líneas:
 - Ruta del archivo, número de preguntas y reparto por temas.
 - Cómo abrirlo: si lo guardaste en la carpeta de la app de escritorio, ya está en su biblioteca. Si no, en la app (de escritorio o `index.html` en el navegador) se arrastra el archivo o se usa "Abrir archivo" / "Pegar JSON".
-- Ajustes aplicados (penalización, tiempo) y que puede pedir cambios: más difícil, más preguntas de un tema, otra penalización, etc.
+- Ajustes aplicados (penalización, tiempo) y que puede pedir cambios: más difícil, más preguntas de un tema, otra penalización, etc. Los retoques pequeños (una errata, cambiar una opción) también puede hacerlos él mismo en la pestaña *Editor* de la app.
 
 No pegues el JSON entero en el chat salvo que lo pida.
