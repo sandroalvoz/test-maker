@@ -1,0 +1,21 @@
+{
+  "name": "testmaker",
+  "productName": "TestMaker",
+  "version": "1.0.0",
+  "description": "Aplicación para hacer exámenes tipo test (formato testmaker-v1).",
+  "main": "escritorio/main.cjs",
+  "author": "Sandro Alvoz",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "katex": "node escritorio/copiar-katex.cjs",
+    "icono": "node escritorio/generar-icono.cjs",
+    "empaquetar": "electron-packager . TestMaker --platform=win32 --arch=x64 --out=dist --overwrite --icon=escritorio/icono.ico --ignore=^/dist --ignore=^/[.]claude --ignore=^/README --ignore=^/node_modules --ignore=^/escritorio/copiar-katex --ignore=^/escritorio/generar-icono"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^45.0.0",
+    "katex": "^0.19.1"
+  }
+}

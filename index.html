@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TestMaker</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="vendor/katex/katex.min.css">
+  <script>
+    // Aplica el tema guardado antes de pintar para evitar parpadeo.
+    try { const t = localStorage.getItem('testmaker.tema'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="barra">
+    <button class="logo" data-accion="ir-inicio" title="Volver a la biblioteca">
+      <span class="logo-marca" aria-hidden="true">✓</span> TestMaker
+    </button>
+    <div class="barra-der">
+      <span id="reloj" class="reloj" hidden></span>
+      <button class="btn-icono" data-accion="cambiar-tema" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema">◐</button>
+    </div>
+  </header>
+
+  <main id="app" tabindex="-1"></main>
+
+  <input type="file" id="input-archivo" accept=".json,application/json" multiple hidden>
+  <div id="avisos" class="toasts" aria-live="polite"></div>
+
+  <script src="validador.js"></script>
+  <script src="app.js"></script>
+  <!-- KaTeX para fórmulas ($...$), incluido en vendor/ para que funcione sin internet. -->
+  <script defer src="vendor/katex/katex.min.js"></script>
+  <script defer src="vendor/katex/contrib/auto-render.min.js" onload="window.TestMaker && TestMaker.formulas()"></script>
+</body>
+</html>

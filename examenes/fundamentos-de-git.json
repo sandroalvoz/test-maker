@@ -1,0 +1,172 @@
+{
+  "formato": "testmaker-v1",
+  "titulo": "Fundamentos de Git",
+  "descripcion": "12 preguntas sobre los conceptos y comandos básicos de Git: repositorio, staging, commits, ramas y remotos.",
+  "autor": "Generado con la skill generar-test",
+  "idioma": "es",
+  "config": {
+    "tiempoLimite": 0,
+    "puntuacion": { "acierto": 1, "fallo": -0.33, "blanco": 0 },
+    "aprobado": 5,
+    "barajarPreguntas": false,
+    "barajarOpciones": true
+  },
+  "preguntas": [
+    {
+      "id": "git-01",
+      "tipo": "unica",
+      "tema": "Conceptos",
+      "enunciado": "¿Qué es el *staging area* (o índice) en Git?",
+      "opciones": [
+        "La copia del repositorio que está en el servidor remoto",
+        "La zona donde se preparan los cambios que entrarán en el próximo commit",
+        "El historial de todos los commits de la rama actual",
+        "La carpeta donde Git guarda las ramas eliminadas"
+      ],
+      "correctas": [1],
+      "explicacion": "El índice guarda la instantánea que se convertirá en el próximo commit; se llena con `git add`. La copia del servidor es el **remoto**, no el índice."
+    },
+    {
+      "id": "git-02",
+      "tipo": "unica",
+      "tema": "Comandos básicos",
+      "enunciado": "Has modificado `app.js` y quieres incluirlo en el próximo commit. ¿Qué comando usas?",
+      "opciones": [
+        "`git commit app.js --stage`",
+        "`git push app.js`",
+        "`git add app.js`",
+        "`git track app.js`"
+      ],
+      "correctas": [2],
+      "explicacion": "`git add` pasa los cambios al staging area. `git push` envía commits al remoto, y `git track` no existe."
+    },
+    {
+      "id": "git-03",
+      "tipo": "vf",
+      "tema": "Conceptos",
+      "enunciado": "Git es un sistema de control de versiones **distribuido**: cada clon contiene el historial completo del repositorio.",
+      "correctas": [0],
+      "explicacion": "Verdadero. A diferencia de sistemas centralizados como SVN, cada clon de Git es un repositorio completo con todo su historial."
+    },
+    {
+      "id": "git-04",
+      "tipo": "unica",
+      "tema": "Ramas",
+      "enunciado": "¿Qué hace `git switch -c nueva-funcion`?",
+      "opciones": [
+        "Crea la rama `nueva-funcion` y se cambia a ella",
+        "Se cambia a `nueva-funcion` solo si ya existe",
+        "Fusiona `nueva-funcion` en la rama actual",
+        "Borra la rama `nueva-funcion` del repositorio local"
+      ],
+      "correctas": [0],
+      "explicacion": "`-c` (*create*) crea la rama y cambia a ella, como el antiguo `git checkout -b`. Sin `-c` solo cambia a una rama existente."
+    },
+    {
+      "id": "git-05",
+      "tipo": "multiple",
+      "tema": "Remotos",
+      "enunciado": "¿Cuáles de estos comandos **traen** información del repositorio remoto al local? Selecciona todas las correctas.",
+      "opciones": [
+        "`git fetch`",
+        "`git pull`",
+        "`git push`",
+        "`git clone`"
+      ],
+      "correctas": [0, 1, 3],
+      "explicacion": "`fetch` descarga commits sin fusionarlos, `pull` descarga y fusiona, y `clone` copia el repositorio entero. `push` hace lo contrario: **envía** commits al remoto."
+    },
+    {
+      "id": "git-06",
+      "tipo": "unica",
+      "tema": "Remotos",
+      "enunciado": "¿Cuál es la diferencia entre `git fetch` y `git pull`?",
+      "opciones": [
+        "`fetch` envía cambios al remoto y `pull` los recibe",
+        "`fetch` solo funciona con ramas nuevas; `pull`, con ramas existentes",
+        "No hay diferencia: `pull` es un alias de `fetch`",
+        "`fetch` descarga cambios sin integrarlos; `pull` descarga e integra (fetch + merge o rebase)"
+      ],
+      "correctas": [3],
+      "explicacion": "`git pull` equivale a `git fetch` seguido de `git merge` (o `rebase` si está configurado). `fetch` solo actualiza las referencias remotas como `origin/main`."
+    },
+    {
+      "id": "git-07",
+      "tipo": "unica",
+      "tema": "Comandos básicos",
+      "enunciado": "Ejecutas lo siguiente en un repositorio limpio:\n```bash\necho \"hola\" > nuevo.txt\ngit status --short\n```\n¿Qué indicador aparece junto a `nuevo.txt`?",
+      "opciones": [
+        "`A` (añadido al índice)",
+        "`M` (modificado)",
+        "`??` (sin seguimiento)",
+        "No aparece: Git ignora los archivos nuevos"
+      ],
+      "correctas": [2],
+      "explicacion": "Un archivo recién creado que nunca se ha añadido está *untracked* y se muestra con `??`. Aparecería como `A` solo después de `git add`."
+    },
+    {
+      "id": "git-08",
+      "tipo": "vf",
+      "tema": "Comandos básicos",
+      "enunciado": "Un archivo listado en `.gitignore` deja de estar versionado aunque ya se hubiera hecho commit de él antes.",
+      "correctas": [1],
+      "explicacion": "Falso. `.gitignore` solo afecta a archivos **sin seguimiento**. Para dejar de versionar uno ya registrado hay que quitarlo del índice con `git rm --cached archivo`."
+    },
+    {
+      "id": "git-09",
+      "tipo": "unica",
+      "tema": "Ramas",
+      "enunciado": "Al hacer `git merge feature` aparece un conflicto en `index.html`. ¿Qué indica el bloque entre `<<<<<<< HEAD` y `=======`?",
+      "opciones": [
+        "Los cambios que vienen de la rama `feature`",
+        "La versión del archivo en la rama actual",
+        "La versión original común a ambas ramas",
+        "Las líneas que Git ya ha resuelto automáticamente"
+      ],
+      "correctas": [1],
+      "explicacion": "`HEAD` es la rama en la que estás. Entre `=======` y `>>>>>>> feature` están los cambios de la rama que fusionas."
+    },
+    {
+      "id": "git-10",
+      "tipo": "multiple",
+      "tema": "Deshacer cambios",
+      "enunciado": "¿Qué afirmaciones sobre `git revert` son correctas? Selecciona todas las correctas.",
+      "opciones": [
+        "Crea un commit nuevo que deshace los cambios de otro commit",
+        "Reescribe el historial borrando el commit indicado",
+        "Es seguro usarlo en ramas ya compartidas con otras personas",
+        "Solo puede deshacer el último commit"
+      ],
+      "correctas": [0, 2],
+      "explicacion": "`revert` añade un commit inverso sin tocar el historial, por eso es seguro en ramas compartidas. Puede revertir cualquier commit, no solo el último. Quien reescribe historial es `git reset`."
+    },
+    {
+      "id": "git-11",
+      "tipo": "unica",
+      "tema": "Deshacer cambios",
+      "enunciado": "Hiciste commit pero olvidaste incluir un archivo. Aún no has hecho push. ¿Cuál es la forma más directa de añadirlo a ese mismo commit?",
+      "opciones": [
+        "`git add archivo` y después `git revert HEAD`",
+        "`git add archivo` y después `git push --force`",
+        "`git stash` y después `git commit`",
+        "`git add archivo` y después `git commit --amend`"
+      ],
+      "correctas": [3],
+      "explicacion": "`--amend` sustituye el último commit por uno nuevo que incluye lo que hay en el índice. `revert` crearía un commit que deshace el anterior, justo lo contrario."
+    },
+    {
+      "id": "git-12",
+      "tipo": "unica",
+      "tema": "Conceptos",
+      "enunciado": "¿Qué identifica de forma única a cada commit en Git?",
+      "opciones": [
+        "Un número de versión que aumenta de uno en uno",
+        "La fecha y hora en que se creó",
+        "Un hash calculado a partir de su contenido y metadatos",
+        "El nombre de la rama más el mensaje del commit"
+      ],
+      "correctas": [2],
+      "explicacion": "Cada commit tiene un hash (SHA-1 o SHA-256) calculado a partir de su contenido, autor, fecha y commit padre. Git no usa números de versión secuenciales."
+    }
+  ]
+}
